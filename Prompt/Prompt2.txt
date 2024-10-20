@@ -1,0 +1,65 @@
+要求に従い、追加する関数のみをかけ。
+
+要求：
+    このクラスに追加する関数を考えよ。
+        import numpy as np
+        import scipy.linalg
+        import os
+        import csv
+
+        class DisturbanceObserverSimulator:
+            def __init__(self, n, A, B, C, D, input_signal, t_end=10, num_points=1000):
+                self.n = n
+                self.m = 1
+                self.r = 1
+                self.t = np.linspace(0, t_end, num_points)
+                self.Ts = self.t[1] - self.t[0]
+                self.A = A
+                self.B = B
+                self.C = C
+                self.D = D
+                self.input_signal = input_signal
+                print(f"Initialized DisturbanceObserverSimulator class with t from 0 to {t_end} seconds and {num_points} points.")
+    以下の関数を参考に、無制御での出力信号を返す関数をかけ。
+    追加の関数の入力：無駄時間（ms）、ノイズの大きさ（0から0.5の値）
+    制御対象のダイナミクスは、0から0.5の大きさの白色ノイズが加えられるようにせよ。
+    そして、むだ時間があり遅延するようにせよ。
+    入力信号と出力信号のサイズは同じになるようにせよ。
+    コメントは英語でかけ。
+
+参考にする関数：
+    def simulate_discrete_state_space(self, A, B, C, D, input_signal):
+        """
+        Simulate the output time series of a discrete-time state-space system.
+
+        Parameters:
+        A (np.ndarray): State transition matrix.
+        B (np.ndarray): Input matrix.
+        C (np.ndarray): Output matrix.
+        D (np.ndarray): Feedforward matrix.
+        input_signal (np.ndarray): Input time series signal.
+
+        Returns:
+        np.ndarray: Output time series signal.
+        """
+        # Number of time steps and input length
+        num_steps = len(input_signal)
+        
+        # Initialize state vector (assuming zero initial state)
+        state_vector = np.zeros(A.shape[0])
+        
+        # Initialize output signal array
+        output_signal = np.zeros(num_steps)
+        
+        # Iterate through each time step to compute the state and output
+        for t in range(num_steps):
+            # Ensure input_signal[t] is at least 1D (in case it's a scalar)
+            current_input = np.atleast_1d(input_signal[t])
+            
+            # Compute the output at the current time step
+            output_signal[t] = C @ state_vector + D @ current_input
+            
+            # Update the state vector for the next time step
+            state_vector = A @ state_vector + B @ current_input
+        
+        return output_signal

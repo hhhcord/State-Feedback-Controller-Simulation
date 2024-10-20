@@ -1,0 +1,105 @@
+要求に従い、修正後の関数をかけ。
+
+要求：
+    SRIMvsPEMをPlantVsIdealに変更せよ。
+    SRIM_systemをPlant_system、PEM_systemをIdeal_systemに変更せよ。
+    可読性の良いコードにせよ。
+    変数名をわかりやすくせよ。
+    コメントは英語にせよ。
+
+関数：
+    def plot_step_response_SRIMvsPEM(self, SRIM_system, PEM_system):
+        print("Plotting step response for SRIM and PEM ...")
+        T, yout_original = ctrl.step_response(SRIM_system, T=self.t[0:800], input=0)
+        T, yout_identified = ctrl.step_response(PEM_system, T=self.t[0:800], input=0)
+
+        plt.figure()
+        plt.plot(T, yout_original, label='Identified System using SRIM', linewidth=3.0)
+        plt.plot(T, yout_identified, label='Identified System using PEM', linewidth=2.0)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Response')
+        plt.legend()
+        plt.title('Step Response Comparison (SRIM vs PEM)')
+
+        file_path = './output/step_response_comparison_SRIMvsPEM.png'
+        plt.savefig(file_path)
+        print(f"Step response plot saved as '{file_path}'.")
+
+    def plot_eigenvalues_SRIMvsPEM(self, SRIM_system, PEM_system):
+        print("Plotting eigenvalues for SRIM and PEM ...")
+        A_SRIM = scipy.linalg.logm(SRIM_system.A) / self.Ts
+        A_PEM = scipy.linalg.logm(PEM_system.A) / self.Ts
+        eig_SRIM = np.linalg.eigvals(A_SRIM)
+        eig_PEM = np.linalg.eigvals(A_PEM)
+
+        plt.figure()
+        plt.scatter(np.real(eig_SRIM), np.imag(eig_SRIM), label='Identified System using SRIM', marker='o')
+        plt.scatter(np.real(eig_PEM), np.imag(eig_PEM), label='Identified System using PEM', marker='x')
+        plt.axhline(0, color='black', lw=0.5)
+        plt.axvline(0, color='black', lw=0.5)
+        plt.xlabel('Real Part')
+        plt.ylabel('Imaginary Part')
+        plt.title('Eigenvalue Plot (SRIM vs PEM)')
+        plt.xlim(None, 0)
+        plt.legend()
+        plt.grid(True)
+
+        file_path = './output/eigenvalue_comparison_SRIMvsPEM.png'
+        plt.savefig(file_path)
+        print(f"Eigenvalue plot saved as '{file_path}'.")
+
+    def plot_bode_SRIMvsPEM(self, SRIM_system, PEM_system):
+        print("Plotting Bode plot for SRIM and PEM ...")
+        plt.figure(figsize=(12, 8))
+
+        # Bode plot for the SRIM and PEM systems
+        mag_srim, phase_srim, omega_srim = ctrl.bode(SRIM_system, plot=False)
+        mag_pem, phase_pem, omega_pem = ctrl.bode(PEM_system, plot=False)
+
+        # Convert omega (rad/s) to frequency in Hz for both systems
+        freq_hz_srim = omega_srim / (2 * np.pi)
+        freq_hz_pem = omega_pem / (2 * np.pi)
+
+        # Custom formatter to display frequency in 'kHz' for values >= 1000 Hz
+        def custom_formatter(x, pos):
+            if x >= 1000:
+                return '{:.0f}k'.format(x / 1000)
+            else:
+                return '{:.0f}'.format(x)
+
+        # Magnitude plot
+        plt.subplot(2, 1, 1)
+        plt.semilogx(freq_hz_srim, 20 * np.log10(mag_srim), label='Identified System using SRIM', linewidth=3.0)
+        plt.semilogx(freq_hz_pem, 20 * np.log10(mag_pem), label='Identified System using PEM', linewidth=2.0)
+        plt.title('Bode Plot')
+        plt.ylabel('Magnitude [dB]')
+        plt.legend()
+        plt.grid(which='both', linestyle='-', linewidth='0.5')
+
+        # Set fewer major ticks on the x-axis (frequency axis)
+        plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True, prune='both', nbins=6))
+        plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(custom_formatter))
+
+        # Phase plot
+        plt.subplot(2, 1, 2)
+        plt.semilogx(freq_hz_srim, phase_srim, label='Identified System using SRIM', linewidth=3.0)
+        plt.semilogx(freq_hz_pem, phase_pem, label='Identified System using PEM', linewidth=2.0)
+        plt.ylabel('Phase [deg]')
+        plt.xlabel('Frequency [Hz]')
+        plt.legend()
+        plt.grid(which='both', linestyle='-', linewidth='0.5')
+
+        # Set fewer major ticks on the x-axis (frequency axis)
+        plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True, prune='both', nbins=6))
+        plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(custom_formatter))
+
+        plt.tight_layout()
+
+        # Save the plot
+        output_dir = './output'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        file_path = os.path.join(output_dir, 'bode_plot_comparison_SRIMvsPEM.png')
+        plt.savefig(file_path)
+        plt.close()
+        print(f"Bode plot saved as '{file_path}'.")

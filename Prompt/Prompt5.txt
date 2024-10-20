@@ -1,0 +1,27 @@
+要求に従い、修正後の関数をかけ。
+
+要求：
+    outputディレクトリにあるgain.csvファイルを読み込め。
+    gain.csv：
+        Gain Type,Continuous/Discrete,Values
+        State Feedback Gain (F),Discrete,"[0.5392435161920446, -3.4385269022413922, -10.570423208128432, 16.469282854226094, 15.479048338124812, -27.238398616962513, -29.202088594352972, 10.740130064721598, -55.850730847756495, 14.869016563701734, 64.65876582197598, 432.57495138578815]"
+    gain.csvに記載されている状態フィードバックゲインFを返す関数にせよ。
+    可読性の良いコードにせよ。
+    変数名をわかりやすくせよ。
+    コメントは英語にせよ。
+
+関数：
+def generate_initial_controller_gain(system_order, lower_bound=-5e-1, upper_bound=5e-1):
+    """
+    Generates the initial controller gain based on the specified system order.
+    
+    Parameters:
+    system_order (int): The size of the random array (system order)
+    lower_bound (float): Lower bound of the random values (default is -1.0)
+    upper_bound (float): Upper bound of the random values (default is 1.0)
+
+    Returns:
+    np.array: A random array representing the initial controller gain
+    """
+    # Generate random values within the specified range
+    return np.random.uniform(lower_bound, upper_bound, size=system_order)

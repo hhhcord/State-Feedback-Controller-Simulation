@@ -1,0 +1,32 @@
+要求に従い、複数の関数のコードをかけ。
+
+要求：
+    このクラスに追加する関数を考えよ。
+        import numpy as np
+        import scipy.linalg
+        import os
+        import csv
+
+        class DisturbanceObserverSimulator:
+            def __init__(self, n, t_end=10, num_points=1000, A, B, C, D, input_signal):
+                self.n = n
+                self.m = 1
+                self.r = 1
+                self.t = np.linspace(0, t_end, num_points)
+                self.Ts = self.t[1] - self.t[0]
+                self,A = A
+                self.B = B
+                self.C = C
+                self.D = D
+                self.input_signal = input_signal
+                print(f"Initialized DisturbanceObserverSimulator class with t from 0 to {t_end} seconds and {num_points} points.")
+    クラスで受け取る、A,B,C,Dは、離散時間系における状態空間の係数行列である。
+    A,B,C,Dの情報を.csvファイルに保存せよ。
+        # Create output directory if it doesn't exist
+            output_dir = './output'
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+    の処理を行え。
+    A,B,C,Dを連続時間系におけるA,B,C,Dに0次ホールドで変換せよ。
+    変換したA,B,C,Dを返せ。
+    変換したA,B,C,Dも.csvファイルに保存せよ。

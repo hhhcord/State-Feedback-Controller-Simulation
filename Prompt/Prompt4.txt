@@ -1,0 +1,87 @@
+要求に従い、追加する関数のみをかけ。
+
+要求：
+    このクラスに追加する関数を考えよ。
+        import numpy as np
+        import scipy.linalg
+        import os
+        import csv
+
+        class StateFeedbackObserverController:
+            def __init__(self, n, A, B, C, D, input_signal, t_end=10, num_points=1000):
+                self.n = n
+                self.m = 1
+                self.r = 1
+                self.t = np.linspace(0, t_end, num_points)
+                self.Ts = self.t[1] - self.t[0]
+                self.A = A
+                self.B = B
+                self.C = C
+                self.D = D
+                self.input_signal = input_signal
+                print(f"Initialized DisturbanceObserverSimulator class with t from 0 to {t_end} seconds and {num_points} points.")
+    
+    discrete_to_continuous_zoh関数で得られた係数行列A_cont, B_cont, C_cont, D_contからオブザーバゲインおよび状態フィードバックゲインを求めよ。
+    状態フィードバックによる目標とする固有値は、-350から-400の実数
+    オブザーバによる目標とする固有値は、-2000から-3000の実数
+    とせよ。
+    コードを書く前に、連続時間系から外乱オブザーバゲインおよび状態フィードバックゲインを求める方法を理論式で説明せよ。
+    for文により、再帰的な計算により、線形代数の知識を用いて解け。
+    pythonの特殊な関数を用いるな。
+    0次ホールドで離散時間系の形にオブザーバゲインおよび状態フィードバックゲインを変形し、関数で返せ。
+    離散時間系のシステム行列は
+        self.A = A
+        self.B = B
+        self.C = C
+        self.D = D
+    である。
+    コメントは英語でかけ。
+
+参考にする関数：
+    def save_matrices_to_csv(self, A, B, C, D, filename):
+        """Save state-space matrices A, B, C, D to a CSV file."""
+        output_dir = './output'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        filepath = os.path.join(output_dir, filename)
+        with open(filepath, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Matrix', 'Values'])
+            writer.writerow(['A'])
+            writer.writerows(A)
+            writer.writerow(['B'])
+            writer.writerows(B)
+            writer.writerow(['C'])
+            writer.writerows(C)
+            writer.writerow(['D'])
+            writer.writerows(D)
+        print(f"Saved matrices to {filepath}")
+
+    def discrete_to_continuous_zoh(self):
+        """Convert discrete-time state-space matrices to continuous-time matrices using zero-order hold."""
+        # Calculate the continuous-time A matrix
+        A_cont = scipy.linalg.logm(self.A) / self.Ts
+        
+        # Calculate the continuous-time B matrix
+        A_inv = np.linalg.inv(A_cont)
+        B_cont = A_inv @ (self.A - np.eye(self.A.shape[0])) @ self.B
+        
+        # C and D matrices remain unchanged
+        C_cont = self.C
+        D_cont = self.D
+
+        print("Converted discrete-time matrices to continuous-time using zero-order hold.")
+        
+        # Save the continuous-time matrices to CSV
+        self.save_matrices_to_csv(A_cont, B_cont, C_cont, D_cont, "continuous_matrices.csv")
+
+        return A_cont, B_cont, C_cont, D_cont
+
+    def run(self):
+        """Run the simulation and save both discrete and continuous matrices to CSV."""
+        # Save discrete-time matrices to CSV
+        self.save_matrices_to_csv(self.A, self.B, self.C, self.D, "discrete_matrices.csv")
+        
+        # Convert to continuous-time and save
+        self.discrete_to_continuous_zoh()
